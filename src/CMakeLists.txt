@@ -1,0 +1,7 @@
+add_subdirectory(app)
+add_subdirectory(exception)
+add_subdirectory(flux)
+add_subdirectory(geom)
+add_subdirectory(tests)
+add_subdirectory(utils)
+add_subdirectory(xsec)

@@ -1,0 +1,3 @@
+FILE(GLOB GDML_FILES *.gdml)
+
+install(FILES ${GDML_FILES} DESTINATION share/gdml)
