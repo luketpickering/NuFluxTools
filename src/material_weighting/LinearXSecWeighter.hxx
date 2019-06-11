@@ -13,7 +13,7 @@ class LinearXSecWeighter : public IMaterialWeighter {
 public:
   /// A simple linear cross-section provider that can be used for interaction
   /// position determination
-  LinearXSecWeighter(double emin = 0.2, double XSec_E_Gradient = 1E-3,
+  LinearXSecWeighter(double emin = 600, double XSec_E_Gradient = 1E-3,
                      double zscaling = 1, double nscaling = 1) {
     EnergyScaling = XSec_E_Gradient;
     EMin = emin;
@@ -26,8 +26,8 @@ public:
       return 0;
     }
 
-    double scaled_grad = EnergyScaling * (ZScaling * mat.avg_Z +
-                                          NScaling * (mat.avg_A - mat.avg_Z)) * mat.density;
+    double scaled_grad = EnergyScaling * /*(ZScaling * mat.avg_Z +
+                                          NScaling * (mat.avg_A - mat.avg_Z)) **/ mat.density;
 
     // y = m*x + c, c = y(0) - m*x(EGradient*EMin)
     double XSecIntersect = -EMin * scaled_grad;

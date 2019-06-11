@@ -7,6 +7,8 @@
 
 #include "geom/NuRayPropagator.hxx"
 
+#include "material_weighting/LinearXSecWeighter.hxx"
+
 #include "utils/FileSystemUtils.hxx"
 #include "utils/PDGUtils.hxx"
 #include "utils/RandomTools.hxx"
@@ -43,6 +45,8 @@ int main() {
 
   double RayWeight;
   tout->Branch("RayWeight", &RayWeight, "RayWeight/D");
+  double e_nu;
+  tout->Branch("e_nu", &e_nu, "e_nu/D");
   TVector3 *StartPos = nullptr;
   tout->Branch("StartPos", &StartPos);
   TVector3 *Dir = nullptr;
@@ -77,13 +81,15 @@ int main() {
     auto nr = NRG.Shoot();
     (*StartPos) = nr.fFourPos_lab.Vect();
     (*Dir) = nr.fFourMom_lab.Vect().Unit();
+    e_nu = nr.fFourMom_lab.E();
 
 #ifdef TREADLOUDLY
     std::cout << "[SHOOT " << i << "]: orig: " << ThreeArrToStr(nr.fFourPos_lab)
               << ", mom: " << ThreeArrToStr(nr.fFourMom_lab) << std::endl;
 #endif
 
-    nft::geom::NuRayPropagator nrp(nr);
+    nft::geom::NuRayPropagator nrp(
+        nr, std::make_unique<nft::mw::LinearXSecWeighter>());
 
     nrp.Propagate();
 

@@ -116,6 +116,12 @@ int main() {
   //           DensityWeightedPosition_2d_x_weighted","RayWeight","COLZ");
   // c1.Print("TreadLoudlyPlots.pdf");
 
+  c1.SetLogz(false);
+
+  TH1D *ENu = new TH1D("ENu", ";E_{#nu} (MeV);Count", 500, 0, 2000);
+  tin->Draw("e_nu >> DensityWeightedPosition_2d", "", "COLZ");
+  c1.Print("TreadLoudlyPlots.pdf");
+
   TFile *finres = TFile::Open("TreadLoudlyTest_resample.root");
   if (finres) {
 
@@ -130,13 +136,15 @@ int main() {
     }
 
     TH2D *DensityWeightedPos_2d =
-        new TH2D("DensityWeightedPosition_2d", "rejsampled;Z (cm);Y (cm)", 500,
-                 -250, 250, 500, -250, 250);
+        new TH2D("DensityWeightedPosition_2d_rs", "rejsampled;Z (cm);Y (cm)",
+                 500, -250, 250, 500, -250, 250);
     tinres->Draw("DensityWeightedPos.Y():DensityWeightedPos."
-                 "Z() >> DensityWeightedPosition_2d",
+                 "Z() >> DensityWeightedPosition_2d_rs",
                  "", "COLZ");
-    c1.SetLogz(false);
+    c1.Print("TreadLoudlyPlots.pdf");
 
+    TH1D *ENu = new TH1D("ENu_rs", ";E_{#nu} (MeV);Count", 500, 0, 2000);
+    tinres->Draw("e_nu >> ENu_rs", "", "");
     c1.Print("TreadLoudlyPlots.pdf");
   }
 
