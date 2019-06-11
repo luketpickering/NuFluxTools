@@ -5,7 +5,8 @@ IRandomVectors.hxx
 NuRay.hxx
 RandomConeDirection.hxx
 RandomCuboidVolume.hxx
-RandomRectangularPlane.hxx)
+RandomRectangularPlane.hxx
+Material.hxx)
 
 #add_library(geom SHARED ${geom_implementation_files})
 
