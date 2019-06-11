@@ -52,6 +52,14 @@ int main() {
   TVector3 *DensityWeightedPos = nullptr;
   tout->Branch("DensityWeightedPos", &DensityWeightedPos);
 
+  TTree *tmeta = new TTree("meta", "");
+  double MaxDensityWeightedPath = 0;
+  tmeta->Branch("MaxDensityWeightedPath", &MaxDensityWeightedPath,
+                "MaxDensityWeightedPath/D");
+  double RefDensityWeightedPath;
+  tmeta->Branch("RefDensityWeightedPath", &RefDensityWeightedPath,
+                "RefDensityWeightedPath/D");
+
   std::string nftdir = nft::utils::GetNFTDir();
   std::string test_gdml_loc =
       nftdir + "share/gdml/SimpleBoxes.geom.manual.gdml";
@@ -60,7 +68,7 @@ int main() {
 
   size_t N = 1E6;
   size_t NPresample = 1E4;
-  double RefDensityWeightedPath = NPresample ? 0 : 1;
+  RefDensityWeightedPath = NPresample ? 0 : 1;
   size_t ShoutEvery = N / 100;
   for (size_t i = 0; i < N; ++i) {
     if (ShoutEvery && !(i % ShoutEvery)) {
@@ -80,6 +88,8 @@ int main() {
     nrp.Propagate();
 
     double DensityWeightedPathLength = nrp.GetPath().GetPathWeight();
+    MaxDensityWeightedPath =
+        std::max(MaxDensityWeightedPath, DensityWeightedPathLength);
     if (i < NPresample) {
       RefDensityWeightedPath =
           std::max(RefDensityWeightedPath, DensityWeightedPathLength);
@@ -97,6 +107,8 @@ int main() {
 
     tout->Fill();
   }
+
+  tmeta->Fill();
 
   fout->Write();
   fout->Close();

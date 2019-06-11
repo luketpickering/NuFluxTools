@@ -116,5 +116,29 @@ int main() {
   //           DensityWeightedPosition_2d_x_weighted","RayWeight","COLZ");
   // c1.Print("TreadLoudlyPlots.pdf");
 
+  TFile *finres = TFile::Open("TreadLoudlyTest_resample.root");
+  if (finres) {
+
+    TTree *tinres = nullptr;
+    finres->GetObject("rdt", tinres);
+
+    if (!tinres) {
+      std::cout
+          << "[ERROR]: Failed to find tree rdt in file TreadLoudlyTest.root"
+          << std::endl;
+      return 2;
+    }
+
+    TH2D *DensityWeightedPos_2d =
+        new TH2D("DensityWeightedPosition_2d", "rejsampled;Z (cm);Y (cm)", 500,
+                 -250, 250, 500, -250, 250);
+    tinres->Draw("DensityWeightedPos.Y():DensityWeightedPos."
+                 "Z() >> DensityWeightedPosition_2d",
+                 "", "COLZ");
+    c1.SetLogz(false);
+
+    c1.Print("TreadLoudlyPlots.pdf");
+  }
+
   c1.Print("TreadLoudlyPlots.pdf]");
 }
