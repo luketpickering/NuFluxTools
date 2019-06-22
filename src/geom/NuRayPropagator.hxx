@@ -2,8 +2,8 @@
 
 #include "geom/NuRay.hxx"
 
-#include "material_weighting/IMaterialWeighter.hxx"
 #include "material_weighting/DensityWeighter.hxx"
+#include "material_weighting/IMaterialWeighter.hxx"
 #include "material_weighting/WeightedRayPath.hxx"
 
 #include "TGeoManager.h"
@@ -31,7 +31,7 @@ class NuRayPropagator {
   double fStepLength;
 
   mw::WeightedRayPath fPath;
-  TVector3 fPrevPosition;
+  ROOT::Math::XYZPoint fPrevPosition;
   TGeoMaterial *fPrevMaterial;
 
 public:
@@ -59,8 +59,8 @@ public:
           fMaterialMap.at(fPrevMaterial), fRay.fFourMom_lab.E(), fRay.fPDG);
       fPath.AddSegment(step_length, weight);
 #ifdef TREADLOUDLY
-      std::cout << "\t[PATH]: Step " << fSteps << ", Traversed " << step_length << " in "
-                << fPrevMaterial->GetName() << " (weight = " << weight
+      std::cout << "\t[PATH]: Step " << fSteps << ", Traversed " << step_length
+                << " in " << fPrevMaterial->GetName() << " (weight = " << weight
                 << ", weighted_step = " << (step_length * weight) << "/"
                 << fPath.GetPathWeight() << ")" << std::endl;
 #endif
@@ -68,8 +68,8 @@ public:
       if (step_length) {
         fPath.AddSegment(step_length, 0); // Vacuuum
 #ifdef TREADLOUDLY
-        std::cout << "\t[PATH]: Step " << fSteps << ", Traversed " << step_length << " m in Vacuum"
-                  << std::endl;
+        std::cout << "\t[PATH]: Step " << fSteps << ", Traversed "
+                  << step_length << " m in Vacuum" << std::endl;
 #endif
       }
     }
@@ -98,8 +98,9 @@ public:
 
     bool isNull = !bool(curr_node);
 
-    TVector3 CurrentPosition(Navigator->GetCurrentPoint());
-    double step_length = (CurrentPosition - fPrevPosition).Mag();
+    double const *cp = Navigator->GetCurrentPoint();
+    ROOT::Math::XYZPoint CurrentPosition(cp[0],cp[1],cp[2]);
+    double step_length = sqrt((CurrentPosition - fPrevPosition).Mag2());
 
     if (curr_node) {
       NonNullStep(step_length);
@@ -129,10 +130,10 @@ public:
     fSteps = 0;
 
     // Set up the navigator
-    Navigator->SetCurrentPoint(fRay.fFourPos_lab[0], fRay.fFourPos_lab[1],
-                               fRay.fFourPos_lab[2]);
-    TVector3 diru = fRay.fFourMom_lab.Vect().Unit();
-    Navigator->SetCurrentDirection(diru[0], diru[1], diru[2]);
+    Navigator->SetCurrentPoint(fRay.fFourPos_lab.X(), fRay.fFourPos_lab.Y(),
+                               fRay.fFourPos_lab.Z());
+    ROOT::Math::XYZVector diru = fRay.fFourMom_lab.Vect().Unit();
+    Navigator->SetCurrentDirection(diru.X(), diru.Y(), diru.Z());
     Navigator->SetStep(fStepLength);
 
     TGeoNode *curr_node = Navigator->SearchNode();
@@ -150,8 +151,8 @@ public:
     }
   }
 
-  TVector3 ChoosePosition() { return fPath.ChoosePosition(); }
-  TVector3 GetLastPosition() { return fPrevPosition; }
+  ROOT::Math::XYZPoint ChoosePosition() { return fPath.ChoosePosition(); }
+  ROOT::Math::XYZPoint GetLastPosition() { return fPrevPosition; }
   mw::WeightedRayPath const &GetPath() { return fPath; }
 }; // namespace geom
 } // namespace geom

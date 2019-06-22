@@ -1,29 +1,30 @@
 #include "flux/NuRayGun.hxx"
 
-#include "geom/RandomConeDirection.hxx"
-#include "geom/RandomCuboidVolume.hxx"
+#include "rng/RandomDirectionDistributions.hxx"
+#include "rng/RandomPositionDistributions.hxx"
+#include "rng/UniformEnergyDistribution.hxx"
 
 #include "utils/PDGUtils.hxx"
-#include "utils/UniformEnergyDistribution.hxx"
+
+#include "Math/Vector4D.h"
 
 #include "TFile.h"
-#include "TLorentzVector.h"
 #include "TTree.h"
 
 int main() {
   nft::flux::NuRayGun NRG(
       14,
-      std::unique_ptr<nft::utils::IEnergyDistribution>(
-          new nft::utils::UniformEnergyDistribution(500, 1000)),
-      std::unique_ptr<nft::geom::IPostionDistribution>(
-          new nft::geom::RandomCuboidVolume()),
-      std::unique_ptr<nft::geom::IDirectionDistribution>(
-          new nft::geom::RandomConeDirection(TVector3(-1, 0, 0), 0.1 * M_PI)));
+      std::unique_ptr<nft::rng::IEnergyDistribution>(
+          new nft::rng::UniformEnergyDistribution(500, 1000)),
+      std::unique_ptr<nft::rng::RandomAACuboidCone>(
+          new nft::rng::RandomAACuboidCone(
+              ROOT::Math::XYZPoint(0, 0, 0), ROOT::Math::XYZVector(0, 0, 0),
+              ROOT::Math::Polar3DVector(1, M_PI, M_PI), 0.1 * M_PI)));
 
   TFile *fout = TFile::Open("RandomNuRaysTest.root", "RECREATE");
   TTree *tout = new TTree("nrt", "");
 
-  TLorentzVector *fm = nullptr;
+  ROOT::Math::XYZTVector *fm = nullptr;
   tout->Branch("fm", &fm);
   nft::PDG_t pdg;
   tout->Branch("pdg", &pdg, "pdg/I");

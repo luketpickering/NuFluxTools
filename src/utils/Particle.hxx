@@ -2,13 +2,13 @@
 
 #include "utils/PDGUtils.hxx"
 
-#include "TLorentzVector.h"
+#include "Math/Vector4D.h"
 
 namespace nft {
 namespace utils {
 struct Particle {
-  TLorentzVector fFourPos_lab;
-  TLorentzVector fFourMom_lab;
+  ROOT::Math::XYZTVector fFourPos_lab;
+  ROOT::Math::XYZTVector fFourMom_lab;
   PDG_t fPDG;
   double Mass() { return fFourMom_lab.M(); }
   double GammaFactor() { return fFourMom_lab.Gamma(); }

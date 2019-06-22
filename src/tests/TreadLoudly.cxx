@@ -1,7 +1,8 @@
 #include "flux/NuRayGun.hxx"
 
-#include "geom/RandomConeDirection.hxx"
-#include "geom/RandomCuboidVolume.hxx"
+#include "rng/RandomDirectionDistributions.hxx"
+#include "rng/RandomPositionDistributions.hxx"
+#include "rng/UniformEnergyDistribution.hxx"
 
 // #define TREADLOUDLY
 
@@ -11,34 +12,24 @@
 
 #include "utils/FileSystemUtils.hxx"
 #include "utils/PDGUtils.hxx"
-#include "utils/RandomTools.hxx"
-#include "utils/UniformEnergyDistribution.hxx"
 
 #include "TFile.h"
 #include "TGeoManager.h"
-#include "TLorentzVector.h"
 #include "TTree.h"
 
 #include <iostream>
 #include <sstream>
 
-template <typename ArrLike> inline std::string ThreeArrToStr(ArrLike d) {
-  std::stringstream ss("");
-  ss.precision(3);
-  ss << "[" << d[0] << ", " << d[1] << ", " << d[2] << " ]";
-  return ss.str();
-}
-
-int main() {
+int main(int argc, char const *argv[]) {
   nft::flux::NuRayGun NRG(
       14,
-      std::unique_ptr<nft::utils::IEnergyDistribution>(
-          new nft::utils::UniformEnergyDistribution(500, 1000)),
-      std::unique_ptr<nft::geom::IPostionDistribution>(
-          new nft::geom::RandomCuboidVolume(TVector3(0, 0, -160),
-                                            TVector3(0, 50, 0))),
-      std::unique_ptr<nft::geom::IDirectionDistribution>(
-          new nft::geom::RandomConeDirection(TVector3(0, 0, 1))));
+      std::unique_ptr<nft::rng::IEnergyDistribution>(
+          new nft::rng::UniformEnergyDistribution(1000, 1000)),
+      std::unique_ptr<nft::rng::RandomAACuboidCone>(
+          new nft::rng::RandomAACuboidCone(ROOT::Math::XYZPoint(0, -200, -400),
+                                           ROOT::Math::XYZVector(1000, 600, 0),
+                                           ROOT::Math::Polar3DVector(1, 0, 0),
+                                           0)));
 
   TFile *fout = TFile::Open("TreadLoudlyTest.root", "RECREATE");
   TTree *tout = new TTree("rdt", "");
@@ -47,13 +38,13 @@ int main() {
   tout->Branch("RayWeight", &RayWeight, "RayWeight/D");
   double e_nu;
   tout->Branch("e_nu", &e_nu, "e_nu/D");
-  TVector3 *StartPos = nullptr;
+  ROOT::Math::XYZPoint *StartPos = nullptr;
   tout->Branch("StartPos", &StartPos);
-  TVector3 *Dir = nullptr;
+  ROOT::Math::XYZVector *Dir = nullptr;
   tout->Branch("Dir", &Dir);
-  TVector3 *EndPos = nullptr;
+  ROOT::Math::XYZPoint *EndPos = nullptr;
   tout->Branch("EndPos", &EndPos);
-  TVector3 *DensityWeightedPos = nullptr;
+  ROOT::Math::XYZPoint *DensityWeightedPos = nullptr;
   tout->Branch("DensityWeightedPos", &DensityWeightedPos);
 
   TTree *tmeta = new TTree("meta", "");
@@ -68,10 +59,14 @@ int main() {
   std::string test_gdml_loc =
       nftdir + "share/gdml/SimpleBoxes.geom.manual.gdml";
 
+  if (argc > 1) {
+    test_gdml_loc = argv[1];
+  }
+
   gGeoManager->Import(test_gdml_loc.c_str());
 
   size_t N = 1E6;
-  size_t NPresample = 1E4;
+  size_t NPresample = 0;
   RefDensityWeightedPath = NPresample ? 0 : 1;
   size_t ShoutEvery = N / 100;
   for (size_t i = 0; i < N; ++i) {

@@ -11,3 +11,5 @@ NuRayGun.hxx)
 #install(TARGETS flux DESTINATION lib)
 
 install(FILES ${flux_header_files} DESTINATION include/flux)
+
+add_subdirectory(input)

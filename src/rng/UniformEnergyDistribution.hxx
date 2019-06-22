@@ -1,13 +1,13 @@
 #pragma once
 
-#include "utils/IEnergyDistribution.hxx"
+#include "rng/IEnergyDistribution.hxx"
 
 #include "TRandom3.h"
 
 #include <utility>
 
 namespace nft {
-namespace utils {
+namespace rng {
 
 class UniformEnergyDistribution : public IEnergyDistribution {
   std::pair<double, double> fERange;

@@ -1,30 +1,23 @@
 #pragma once
 
-#include "geom/IRandomVectors.hxx"
+#include "rng/IRandomVectors.hxx"
 
 #include "TRandom3.h"
-#include "TRotation.h"
-#include "TVector3.h"
+#include "Math/AxisAngle.h"
 
 namespace nft {
-namespace geom {
+namespace rng {
 class RandomConeDirection : public IDirectionDistribution {
-  TVector3 fCenterAxis;
-  TVector3 fCenterAxis_UZ;
+  ROOT::Math::Polar3DVector fCenterAxis;
   double fCosThetaUniformRange;
   bool fHasExtent;
-  bool fNotZ;
-  TRotation ZToUZ;
 
 public:
-  RandomConeDirection(TVector3 Center = TVector3(0, 0, 1),
+  template <typename DirVect = ROOT::Math::XYZVector>
+  RandomConeDirection(DirVect const &Center = ROOT::Math::XYZVector(0, 0, 1),
                       double HalfOpeningAngle_rads = 0)
       : fCosThetaUniformRange(0) {
     fCenterAxis = Center.Unit();
-    fNotZ = (fCenterAxis[2] != 1);
-    if (fNotZ) {
-      ZToUZ.SetZAxis(fCenterAxis);
-    }
     fHasExtent = (HalfOpeningAngle_rads > 0);
     if (fHasExtent) {
       double abs_open = fabs(HalfOpeningAngle_rads);
@@ -33,18 +26,21 @@ public:
     }
   }
 
-  TVector3 GetRandomDirection() const {
+  ROOT::Math::Polar3DVector GetRandomDirection() const {
     if (!fHasExtent) {
       return fCenterAxis;
     }
-    TVector3 RandomAboutZ;
+    ROOT::Math::Polar3DVector rdir = fCenterAxis;
 
-    double theta = acos(1 - (gRandom->Uniform() * fCosThetaUniformRange));
+    double dtheta = acos(1 - (gRandom->Uniform() * fCosThetaUniformRange));
+
+    rdir.SetTheta(rdir.Theta() + dtheta);
     double phi = gRandom->Uniform() * 2 * M_PI;
-    RandomAboutZ.SetMagThetaPhi(1, theta, phi);
+    ROOT::Math::AxisAngle rot(fCenterAxis, phi);
 
-    return fNotZ ? ZToUZ * RandomAboutZ : RandomAboutZ;
+    return (rot * rdir);
   }
 };
-} // namespace geom
+
+} // namespace rng
 } // namespace nft

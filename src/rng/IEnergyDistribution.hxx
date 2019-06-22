@@ -1,7 +1,7 @@
 #pragma once
 
 namespace nft {
-namespace utils {
+namespace rng {
 
 class IEnergyDistribution {
 public:

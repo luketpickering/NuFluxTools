@@ -25,11 +25,13 @@ class WeightedRayPath {
   };
 
   std::vector<path_seg> fPath;
-  TVector3 fStart;
-  TVector3 fDirection;
+  ROOT::Math::XYZPoint fStart;
+  ROOT::Math::XYZVector fDirection;
 
 public:
-  WeightedRayPath(TVector3 start, TVector3 const &direction) {
+  template <typename PosVect = ROOT::Math::XYZPoint,
+            typename DirVect = ROOT::Math::XYZVector>
+  WeightedRayPath(PosVect start, DirVect const &direction) {
     fPath.push_back(path_seg{0, 0});
     fStart = std::move(start);
     fDirection = direction.Unit();
@@ -47,7 +49,7 @@ public:
 
   double GetPathWeight() const { return fPath.back().weighted_length; }
 
-  TVector3 ChoosePosition() {
+  ROOT::Math::XYZPoint ChoosePosition() {
     if (!GetPathWeight()) {
       return fStart;
     }

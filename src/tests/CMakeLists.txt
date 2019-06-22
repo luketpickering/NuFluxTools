@@ -1,4 +1,9 @@
-SET(TESTAPPS RandomPositions RandomDirections RandomNuRays TreadLoudly DumpTreadLoudlyPlots ResampleTreadLoudlyOutput)
+SET(TESTAPPS
+  RandomPositions
+  RandomDirections
+  RandomNuRays
+  TreadLoudly
+)
 
 foreach(a ${TESTAPPS})
   add_executable(${a} ${a}.cxx)

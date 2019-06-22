@@ -1,21 +1,23 @@
-#include "geom/RandomConeDirection.hxx"
+#include "rng/RandomDirectionDistributions.hxx"
 
 #include "TFile.h"
 #include "TTree.h"
 
 int main() {
-  nft::geom::RandomConeDirection alongZ(TVector3(0, 0, 1), 0.25 * M_PI);
-  nft::geom::RandomConeDirection alongX(TVector3(1, 0, 0), 0.5 * M_PI);
-  nft::geom::RandomConeDirection alongY(TVector3(0, 1, 0), 0);
+  nft::rng::RandomConeDirection alongZ(ROOT::Math::XYZVector(0, 0, 1),
+                                        0.25 * M_PI);
+  nft::rng::RandomConeDirection alongX(ROOT::Math::XYZVector(1, 0, 0),
+                                        0.5 * M_PI);
+  nft::rng::RandomConeDirection alongY(ROOT::Math::XYZVector(0, 1, 0), 0);
 
   TFile *fout = TFile::Open("RandomDirectionTest.root", "RECREATE");
   TTree *tout = new TTree("rdt", "");
 
-  TVector3 *rdz = nullptr;
+  ROOT::Math::XYZVector *rdz = nullptr;
   tout->Branch("rdz", &rdz);
-  TVector3 *rdx = nullptr;
+  ROOT::Math::XYZVector *rdx = nullptr;
   tout->Branch("rdx", &rdx);
-  TVector3 *rdy = nullptr;
+  ROOT::Math::XYZVector *rdy = nullptr;
   tout->Branch("rdy", &rdy);
 
   size_t N = 1E5;

@@ -1,12 +1,10 @@
 SET(geom_implementation_files)
 
 SET(geom_header_files
-IRandomVectors.hxx
 NuRay.hxx
-RandomConeDirection.hxx
-RandomCuboidVolume.hxx
-RandomRectangularPlane.hxx
-Material.hxx)
+Material.hxx
+NuRayPropagator.hxx
+BoundingCuboid.hxx)
 
 #add_library(geom SHARED ${geom_implementation_files})
 

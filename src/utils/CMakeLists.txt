@@ -3,8 +3,6 @@ SET(utils_implementation_files)
 SET(utils_header_files
 Particle.hxx
 PDGUtils.hxx
-IEnergyDistribution.hxx
-UniformEnergyDistribution.hxx
 FileSystemUtils.hxx
 RandomTools.hxx)
 
