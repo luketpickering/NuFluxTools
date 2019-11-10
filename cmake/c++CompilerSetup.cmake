@@ -17,20 +17,18 @@
 #    along with NUISANCE.  If not, see <http://www.gnu.org/licenses/>.
 ################################################################################
 
-include(cmake/StringAndListUtils.cmake)
-
 set(CXX_WARNINGS -Wall -Wextra)
 
 LIST(APPEND EXTRA_CXX_FLAGS ${CXX_WARNINGS} -Werror -Wno-delete-non-virtual-dtor -Wno-unused "-D__FILENAME__=\"$(subst ${CMAKE_SOURCE_DIR}/,,$(abspath $<))\"")
 
-BuildFlagString(NUISANCE_LINK_DIRS "-L" ${EXTRA_LINK_DIRS})
+BuildFlagString(NFT_LINK_DIRS "-L" ${EXTRA_LINK_DIRS})
 
 LIST(APPEND EXTRA_LIBS dl)
 BuildLibraryFlagString(STR_EXTRA_LIBS ${EXTRA_LIBS})
 BuildFlagString(STR_EXTRA_SHAREDOBJS " " ${EXTRA_SHAREDOBJS})
 
 #This ends up holding all of the libraries and search paths for extenal dependencies
-CatStringsIfNotEmpty(NUISANCE_DEPEND_LIBS
+CatStringsIfNotEmpty(NFT_DEPEND_LIBS
   ${STR_EXTRA_SHAREDOBJS}
   ${STR_EXTRA_LIBS})
 
@@ -40,20 +38,20 @@ CatStringsIfNotEmpty(CMAKE_LINK_FLAGS
   ${CMAKE_LINK_FLAGS}
   ${STR_EXTRA_LINK_FLAGS})
 
-get_directory_property(NUISANCE_INCLUDE_DIRS INCLUDE_DIRECTORIES)
+get_directory_property(NFT_INCLUDE_DIRS INCLUDE_DIRECTORIES)
 
-BuildFlagString(NUISANCE_CXX_FLAGS " " ${EXTRA_CXX_FLAGS})
-CatStringsIfNotEmpty(NUISANCE_CXX_FLAGS ${CMAKE_CXX_FLAGS} ${NUISANCE_CXX_FLAGS} )
+BuildFlagString(NFT_CXX_FLAGS " " ${EXTRA_CXX_FLAGS})
+CatStringsIfNotEmpty(NFT_CXX_FLAGS ${CMAKE_CXX_FLAGS} ${NFT_CXX_FLAGS} )
 
 if (VERBOSE)
   cmessage (STATUS "C++ Compiler      : ${CXX_COMPILER_NAME}")
-  cmessage (STATUS "    Flags         : ${NUISANCE_CXX_FLAGS}")
+  cmessage (STATUS "    Flags         : ${NFT_CXX_FLAGS}")
   cmessage (STATUS "    Release Flags : ${CMAKE_CXX_FLAGS_RELEASE}")
   cmessage (STATUS "    Debug Flags   : ${CMAKE_CXX_FLAGS_DEBUG}")
-  cmessage (STATUS "    Include Dirs  : ${NUISANCE_INCLUDE_DIRS}")
+  cmessage (STATUS "    Include Dirs  : ${NFT_INCLUDE_DIRS}")
   cmessage (STATUS "    Linker Flags  : ${CMAKE_LINK_FLAGS}")
-  cmessage (STATUS "    Link Dirs     : ${NUISANCE_LINK_DIRS}")
-  cmessage (STATUS "    Lib Flags     : ${NUISANCE_DEPEND_LIBS}")
+  cmessage (STATUS "    Link Dirs     : ${NFT_LINK_DIRS}")
+  cmessage (STATUS "    Lib Flags     : ${NFT_DEPEND_LIBS}")
 endif()
 
 add_compile_options(${EXTRA_CXX_FLAGS})

@@ -75,6 +75,13 @@ if("${ROOT_FEATURES}" MATCHES "opengl")
 endif()
 
 if(DEFINED NEED_ROOTPYTHIA6 AND NEED_ROOTPYTHIA6)
+  ###############################  pythia6  ######################################
+  if("$ENV{PYTHIA6} " STREQUAL " ")
+      cmessage(FATAL_ERROR "Environment variable PYTHIA6 is not defined.")
+  else()
+    SET(PYTHIA6 $ENV{PYTHIA6})
+  endif()
+  LIST(APPEND EXTRA_LINK_DIRS ${PYTHIA6})
   LIST(APPEND ROOT_LIBS EGPythia6 Pythia6)
 endif()
 

@@ -1,0 +1,34 @@
+if(DEFINED USE_DK2NU AND USE_DK2NU)
+
+  #Check if it already set up (probably by ups)
+  if(DEFINED ENV{DK2NU_LIB} AND DEFINED ENV{DK2NU_INC})
+    LIST(APPEND INCDIRS $ENV{DK2NU_INC})
+    LIST(APPEND EXTRA_LINK_DIRS $ENV{DK2NU_LIB})
+    LIST(APPEND EXTRA_LIBS dk2nuTree)
+  else()
+
+    ###### dk2nu set up
+    ExternalProject_Add(dk2nu
+      PREFIX "${PROJECT_BINARY_DIR}/Ext"
+      SVN_REPOSITORY https://cdcvs.fnal.gov/subversion/dk2nu/tags/v01_08_00
+      UPDATE_DISCONNECTED 1
+      CONFIGURE_COMMAND ${CMAKE_COMMAND}
+        ${PROJECT_BINARY_DIR}/Ext/src/dk2nu/dk2nu
+        -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
+        -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+        -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+        -DWITH_GENIE=OFF -DWITH_TBB=OFF
+      )
+
+    include_directories(${PROJECT_BINARY_DIR}/Ext/src/dk2nu/)
+    LIST(APPEND EXTRA_LINK_DIRS ${CMAKE_INSTALL_PREFIX}/lib)
+    LIST(APPEND EXTRA_LIBS dk2nuTree)
+  endif()
+
+  LIST(APPEND EXTRA_CXX_FLAGS -DUSE_DK2NU)
+
+  SET(USE_DK2NU TRUE)
+else()
+  SET(USE_DK2NU FALSE)
+endif()

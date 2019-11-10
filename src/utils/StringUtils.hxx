@@ -18,15 +18,32 @@
  *******************************************************************************/
 
 #pragma once
+
+#include "utils/TerminalUtils.hxx"
+
+#include <regex>
 #include <string>
 #include <vector>
 
 namespace nft {
 namespace utils {
 
-std::vector<std::string> GetMatchingFiles(std::string, std::string);
+std::string EnsureTrailingSlash(std::string str);
+std::string parseCode(std::regex_constants::error_type etype);
+std::string DeGlobPattern(std::string const &pattern);
 
-std::string GetNFTDir();
+#ifdef USE_FHICL
 
+std::string indent_apply_width(std::string, size_t indent = 0,
+                               size_t width = GetWindowWidth());
+
+std::vector<std::string> split(std::string const &str,
+                               std::string const &delim);
+std::vector<std::string> split(std::string const &str,
+                               std::vector<std::string> const &delims);
+
+std::string str_replace(std::string const &inp, std::string const &from,
+                        std::string const &to);
+#endif
 } // namespace utility
-} // namespace nft
+} // namespace nuis

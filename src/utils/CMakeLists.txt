@@ -1,13 +1,18 @@
-SET(utils_implementation_files)
+SET(utils_implementation_files
+FileSystemUtils.cxx
+StringUtils.cxx)
 
 SET(utils_header_files
 Particle.hxx
 PDGUtils.hxx
 FileSystemUtils.hxx
-RandomTools.hxx)
+ROOTUtils.hxx
+T2Str.hxx
+StringUtils.hxx
+TerminalUtils.hxx)
 
-#add_library(utils SHARED ${utils_implementation_files})
+add_library(nft_utils SHARED ${utils_implementation_files})
 
-#install(TARGETS utils DESTINATION lib)
+install(TARGETS nft_utils DESTINATION lib)
 
 install(FILES ${utils_header_files} DESTINATION include/utils)
