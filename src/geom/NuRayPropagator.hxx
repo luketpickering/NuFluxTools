@@ -42,7 +42,7 @@ public:
                   double step_length = 0.1)
       : fMaterialWeighter(std::move(material_weighter)),
         fStepLength(step_length),
-        fPath(ray.fFourPos_lab.Vect(), ray.fFourMom_lab.Vect()) {
+        fPath(ray.fThreePos_lab, ray.fFourMom_lab.Vect()) {
     fRay = std::move(ray);
 
     TList *mat_list = gGeoManager->GetListOfMaterials();
@@ -130,15 +130,15 @@ public:
     fSteps = 0;
 
     // Set up the navigator
-    Navigator->SetCurrentPoint(fRay.fFourPos_lab.X(), fRay.fFourPos_lab.Y(),
-                               fRay.fFourPos_lab.Z());
+    Navigator->SetCurrentPoint(fRay.fThreePos_lab.X(), fRay.fThreePos_lab.Y(),
+                               fRay.fThreePos_lab.Z());
     ROOT::Math::XYZVector diru = fRay.fFourMom_lab.Vect().Unit();
     Navigator->SetCurrentDirection(diru.X(), diru.Y(), diru.Z());
     Navigator->SetStep(fStepLength);
 
     TGeoNode *curr_node = Navigator->SearchNode();
 
-    fPrevPosition = fRay.fFourPos_lab.Vect();
+    fPrevPosition = fRay.fThreePos_lab;
     fPrevMaterial =
         bool(curr_node) ? curr_node->GetVolume()->GetMaterial() : nullptr;
 

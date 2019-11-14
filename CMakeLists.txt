@@ -13,6 +13,8 @@ set (NuFluxTools_VERSION_STRING "v${NuFluxTools_VERSION_MAJOR}r${NuFluxTools_VER
 #Set this to TRUE to enable build debugging messages
 set(BUILD_DEBUG_MSGS TRUE)
 set(VERBOSE TRUE)
+set(USE_DK2NU TRUE)
+set(USE_FHICL TRUE)
 
 include(${CMAKE_SOURCE_DIR}/cmake/cmessage.cmake)
 
@@ -31,6 +33,10 @@ elseif(NOT DEFINED CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE DEBUG)
 endif()
 
+if(NOT DEFINED USE_GENIE)
+  set(USE_GENIE false)
+endif()
+
 ################################################################################
 #                            Check Dependencies
 ################################################################################
@@ -40,6 +46,16 @@ SET(INCDIRS)
 SET(EXTRA_LINK_DIRS)
 SET(EXTRA_LIBS)
 
+include(cmake/parseConfigApp.cmake)
+
+###############################  dk2nu  #####################################
+include(${CMAKE_SOURCE_DIR}/cmake/dk2nuSetup.cmake)
+
+###############################  genie  #####################################
+if(USE_GENIE)
+  include(${CMAKE_SOURCE_DIR}/cmake/GENIESetup.cmake)
+endif()
+
 ##################################  ROOT  ######################################
 include(${CMAKE_SOURCE_DIR}/cmake/ROOTSetup.cmake)
 
@@ -47,9 +63,10 @@ include(${CMAKE_SOURCE_DIR}/cmake/ROOTSetup.cmake)
 # include(${CMAKE_SOURCE_DIR}/cmake/Prob3++Setup.cmake)
 
 ###############################  fhiclcpp  #####################################
-# include(${CMAKE_SOURCE_DIR}/cmake/fhiclcppSetup.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/fhiclcppSetup.cmake)
 
 include_directories(src)
+include_directories(${CMAKE_INSTALL_PREFIX}/include)
 
 ################################## COMPILER ####################################
 include(${CMAKE_SOURCE_DIR}/cmake/c++CompilerSetup.cmake)

@@ -74,12 +74,12 @@ int main(int argc, char const *argv[]) {
       std::cout << "[INFO]: Throw " << i << "/" << N << std::endl;
     }
     auto nr = NRG.Shoot();
-    (*StartPos) = nr.fFourPos_lab.Vect();
+    (*StartPos) = nr.fThreePos_lab;
     (*Dir) = nr.fFourMom_lab.Vect().Unit();
     e_nu = nr.fFourMom_lab.E();
 
 #ifdef TREADLOUDLY
-    std::cout << "[SHOOT " << i << "]: orig: " << ThreeArrToStr(nr.fFourPos_lab)
+    std::cout << "[SHOOT " << i << "]: orig: " << ThreeArrToStr(nr.fThreePos_lab)
               << ", mom: " << ThreeArrToStr(nr.fFourMom_lab) << std::endl;
 #endif
 

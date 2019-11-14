@@ -48,9 +48,11 @@ if [ "${EXTRA_SETUP_SCRIPT}" ]; then
 fi
 
 export NUFLUXTOOLSROOT="@CMAKE_INSTALL_PREFIX@"
+export NUFLUXTOOLS_PLUGINS="@CMAKE_INSTALL_PREFIX@/plugins"
 export NUFLUXTOOLS_VERSION="@NuFluxTools_VERSION_STRING@"
 
 add_to_PATH "${NUFLUXTOOLSROOT}/bin"
+add_to_LD_LIBRARY_PATH "${NUFLUXTOOLSROOT}/lib"
 
 if [ ! "${ROOTSYS}" ]; then
   echo "[INFO]: Sourcing ROOT from: @CMAKE_ROOTSYS@"

@@ -22,15 +22,10 @@
 #include "plugins/NamedSO.hxx"
 #include "plugins/traits.hxx"
 
-#include "config/GlobalConfiguration.hxx"
-
-#include "utility/FileSystemUtility.hxx"
-#include "utility/StringUtility.hxx"
+#include "utils/FileSystemUtils.hxx"
+#include "utils/StringUtils.hxx"
 
 #include "exception/exception.hxx"
-
-#include "fhiclcpp/ParameterSet.h"
-#include "string_parsers/to_string.hxx"
 
 // linux
 #include <dlfcn.h>
@@ -49,9 +44,9 @@ namespace plugins {
 
 extern std::vector<NamedSO> LoadedSharedObjects;
 
-NEW_NUIS_EXCEPT(failed_to_find_instantiator);
-NEW_NUIS_EXCEPT(malformed_plugin_interface);
-NEW_NUIS_EXCEPT(failed_to_load_so);
+NEW_NFT_EXCEPT(failed_to_find_instantiator);
+NEW_NFT_EXCEPT(malformed_plugin_interface);
+NEW_NFT_EXCEPT(failed_to_load_so);
 
 typedef void *(*inst_fcn)();
 typedef void (*dltr_fcn)(void *);
@@ -138,28 +133,18 @@ Instantiate(std::string const &classname) {
 
   static std::vector<PluginInstantiator<T>> LoadedPlugins;
 
-  fhicl::ParameterSet const &plugins =
-      config::GetDocument().get<fhicl::ParameterSet>("plugins");
-  fhicl::ParameterSet const &search_paths =
-      plugins.get<fhicl::ParameterSet>("search_paths");
-
   std::vector<std::string> plugin_search_dirs;
-  // Look for plugin search paths in sequence elements of the
-  // plugins.search_paths table
-  for (std::string const &key : search_paths.get_names()) {
-    if (!search_paths.is_key_to_sequence(key)) {
-      continue;
-    }
-    for (std::string const &path :
-         search_paths.get<std::vector<std::string>>(key)) {
-      plugin_search_dirs.push_back(path);
-    }
+
+  if (getenv("NUFLUXTOOLS_PLUGINS")) {
+    plugin_search_dirs.push_back(getenv("NUFLUXTOOLS_PLUGINS"));
+  } else {
+    plugin_search_dirs.push_back("./");
   }
 
   for (std::string path : plugin_search_dirs) {
-    path = utility::EnsureTrailingSlash(path);
+    path = utils::EnsureTrailingSlash(path);
     for (std::string const &so_name :
-         utility::GetMatchingFiles(path, ".*\\.so")) {
+         utils::GetMatchingFiles(path, ".*\\.so")) {
 
       for (PluginInstantiator<T> &plugin : LoadedPlugins) {
         if (plugin.FQ_so_path == (path + so_name) &&
@@ -245,9 +230,7 @@ Instantiate(std::string const &classname) {
       << "[ERROR]: Failed to find instantiator for classname: "
       << std::quoted(classname) << " using interface "
       << std::quoted(plugin_traits<T>::interface_name())
-      << " from configured search paths: "
-      << fhicl::string_parsers::T2Str<std::vector<std::string>>(
-             plugin_search_dirs);
+      << " from configured search path: " << plugin_search_dirs.front();
 }
 } // namespace plugins
 } // namespace nft

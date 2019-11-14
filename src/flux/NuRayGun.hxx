@@ -35,8 +35,8 @@ public:
   geom::NuRay Shoot() {
     geom::NuRay nu;
     rng::posdir_t pd = fPosDir->GetRandomPositionDirection();
-    nu.fFourPos_lab = ROOT::Math::XYZTVector(pd.Position.X(), pd.Position.Y(),
-                                             pd.Position.Z(), 0);
+    nu.fThreePos_lab =
+        ROOT::Math::XYZPoint(pd.Position.X(), pd.Position.Y(), pd.Position.Z());
     double E = fE->GetRandomEnergy();
     pd.Direction.SetR(E);
     nu.fFourMom_lab = ROOT::Math::XYZTVector(pd.Direction.X(), pd.Direction.Y(),

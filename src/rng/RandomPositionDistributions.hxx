@@ -63,7 +63,7 @@ class RandomXYRectangularPlane : public RandomAACuboidVolume {
 public:
   template <typename PosVect = ROOT::Math::XYZPoint>
   RandomXYRectangularPlane(
-      PosVect const &Center = ROOT::Math::XYZPoint(0, 0),
+      PosVect const &Center = ROOT::Math::XYZPoint(0, 0,0),
       ROOT::Math::XYVector const &XYHalfWidth = ROOT::Math::XYVector(0, 0))
       : RandomAACuboidVolume(
             ROOT::Math::XYZPoint(Center),
