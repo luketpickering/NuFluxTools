@@ -9,6 +9,7 @@
 class IDecayParentReader {
 public:
   NEW_NFT_EXCEPT(IDecayParentReader_OOB);
+  NEW_NFT_EXCEPT(IDecayParentReader_Unimplemented);
 
   IDecayParentReader() : fBeamToDetectorTransformation() {}
 
@@ -18,6 +19,11 @@ public:
   virtual bool Initialize(std::string const &file) = 0;
   virtual size_t GetN() const = 0;
   virtual nft::flux::DecayParent Get(size_t) const = 0;
+
+  virtual bool AddFiles(std::string const &add) {
+    throw IDecayParentReader_Unimplemented()
+        << "[ERROR]: Subclass cannot add files to reader.";
+  }
 
   void SetTransformation(ROOT::Math::Transform3D const &t) {
     fBeamToDetectorTransformation = t;

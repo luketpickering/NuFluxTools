@@ -3,6 +3,7 @@
 
 #include "exception/exception.hxx"
 
+#include "TChain.h"
 #include "TFile.h"
 #include "TGraph.h"
 #include "TGraphErrors.h"
@@ -63,34 +64,45 @@ struct TreeFile {
   TFile_ptr file;
   TTree *tree;
   bool file_owned;
+  bool tree_owned;
   TreeFile()
-      : file(make_unique_TFile(nullptr)), tree(nullptr), file_owned(false) {}
+      : file(make_unique_TFile(nullptr)), tree(nullptr), file_owned(false),
+        tree_owned(false) {}
   TreeFile(TreeFile const &other) = delete;
   TreeFile &operator=(TreeFile &&other) {
     file = std::move(other.file);
     tree = other.tree;
     file_owned = other.file_owned;
+    tree_owned = other.tree_owned;
 
     other.file = nullptr;
     other.tree = nullptr;
     other.file_owned = false;
+    other.tree_owned = false;
 
     return *this;
   }
 
   TreeFile(TreeFile &&other)
       : file(std::move(other.file)), tree(other.tree),
-        file_owned(other.file_owned) {
+        file_owned(other.file_owned), tree_owned(other.tree_owned) {
     other.file = nullptr;
     other.tree = nullptr;
     other.file_owned = false;
+    other.tree_owned = false;
   }
 
   TTree *operator->() { return tree; }
 
+  TChain *chain() { return static_cast<TChain *>(tree); }
+
+  bool operator!() { return !tree; }
+
   ~TreeFile() {
     if (file && file_owned) {
       file->Write();
+    } else if (tree && tree_owned) {
+      delete tree;
     }
   }
 };
@@ -118,6 +130,25 @@ inline TreeFile CheckGetTTree(std::string const &fname,
   TreeFile tf = CheckGetTTree(file.get(), tname);
   tf.file = std::move(file);
   tf.file_owned = true;
+  return tf;
+}
+
+inline TreeFile OpenTChain(std::string const &tname) {
+  TreeFile tf;
+  tf.tree = new TChain(tname.c_str());
+  tf.tree_owned = true;
+  return tf;
+}
+
+inline TreeFile CheckOpenTChain(std::string const &fname, std::string const &tname) {
+  TreeFile tf = OpenTChain(tname);
+
+  if (!tf.chain()->AddFile(fname.c_str())) {
+    throw failed_to_get_TTree()
+        << "[ERROR]: Failed to get TTree named: " << std::quoted(tname)
+        << " from TFile: " << std::quoted(fname);
+  }
+
   return tf;
 }
 

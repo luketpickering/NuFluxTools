@@ -30,20 +30,18 @@ class dk2nuliteReader : public IDecayParentReader {
     Double_t pots;
   } dk2nulite;
 
-  mutable nft::utils::TFile_ptr fInputTree;
-  mutable nft::utils::TreeFile fdk2nuliteTree;
+  mutable nft::utils::TreeFile fdk2nuliteChain;
 
   double fTotalPOT;
   Long64_t fNEntries;
 
 public:
-  dk2nuliteReader() : fInputTree(nft::utils::make_unique_TFile(nullptr)) {}
+  dk2nuliteReader() : fdk2nuliteChain(), fTotalPOT(0), fNEntries(0) {}
   bool CanReadFile(std::string const &file) {
-    nft::utils::TFile_ptr itree = nft::utils::CheckOpenTFile(file);
 
     try {
-      (void)nft::utils::CheckGetTTree(itree.get(), "dk2nuTree_lite");
-      (void)nft::utils::CheckGetTTree(itree.get(), "dkmetaTree_lite");
+      (void)nft::utils::CheckOpenTChain(file, "dk2nuTree_lite");
+      (void)nft::utils::CheckOpenTChain(file, "dkmetaTree_lite");
     } catch (nft::utils::failed_to_get_TTree) {
       return false;
     }
@@ -55,46 +53,56 @@ public:
       return false;
     }
 
-    fInputTree = nft::utils::CheckOpenTFile(file);
+    return AddFiles(file);
+  }
 
-    fdk2nuliteTree =
-        nft::utils::CheckGetTTree(fInputTree.get(), "dk2nuTree_lite");
+  bool AddFiles(std::string const &add) {
+    if (!fdk2nuliteChain) {
+      fdk2nuliteChain = nft::utils::CheckOpenTChain(add, "dk2nuTree_lite");
 
-    nft::utils::TreeFile dkmetaliteTree =
-        nft::utils::CheckGetTTree(fInputTree.get(), "dkmetaTree_lite");
+      fdk2nuliteChain->SetBranchAddress("decay_ntype", &dk2nulite.decay_ntype);
+      fdk2nuliteChain->SetBranchAddress("decay_vx", &dk2nulite.decay_vx);
+      fdk2nuliteChain->SetBranchAddress("decay_vy", &dk2nulite.decay_vy);
+      fdk2nuliteChain->SetBranchAddress("decay_vz", &dk2nulite.decay_vz);
+      fdk2nuliteChain->SetBranchAddress("decay_pdpx", &dk2nulite.decay_pdpx);
+      fdk2nuliteChain->SetBranchAddress("decay_pdpy", &dk2nulite.decay_pdpy);
+      fdk2nuliteChain->SetBranchAddress("decay_pdpz", &dk2nulite.decay_pdpz);
+      fdk2nuliteChain->SetBranchAddress("decay_ppdxdz",
+                                        &dk2nulite.decay_ppdxdz);
+      fdk2nuliteChain->SetBranchAddress("decay_ppdydz",
+                                        &dk2nulite.decay_ppdydz);
+      fdk2nuliteChain->SetBranchAddress("decay_pppz", &dk2nulite.decay_pppz);
+      fdk2nuliteChain->SetBranchAddress("decay_ppenergy",
+                                        &dk2nulite.decay_ppenergy);
+      fdk2nuliteChain->SetBranchAddress("decay_ptype", &dk2nulite.decay_ptype);
+      fdk2nuliteChain->SetBranchAddress("decay_muparpx",
+                                        &dk2nulite.decay_muparpx);
+      fdk2nuliteChain->SetBranchAddress("decay_muparpy",
+                                        &dk2nulite.decay_muparpy);
+      fdk2nuliteChain->SetBranchAddress("decay_muparpz",
+                                        &dk2nulite.decay_muparpz);
+      fdk2nuliteChain->SetBranchAddress("decay_mupare",
+                                        &dk2nulite.decay_mupare);
+      fdk2nuliteChain->SetBranchAddress("decay_necm", &dk2nulite.decay_necm);
+      fdk2nuliteChain->SetBranchAddress("decay_nimpwt",
+                                        &dk2nulite.decay_nimpwt);
 
-    dkmetaliteTree->SetBranchAddress("pots", &dk2nulite.pots);
+      fdk2nuliteChain->GetEntry(0);
+    }
 
-    fTotalPOT = 0;
-    for (Long64_t i = 0; i < dkmetaliteTree->GetEntries(); ++i) {
-      dkmetaliteTree->GetEntry(i);
+    auto rtn = fdk2nuliteChain.chain()->Add(add.c_str());
+    fNEntries = fdk2nuliteChain->GetEntries();
+
+    nft::utils::TreeFile dkmetaliteChain =
+        nft::utils::CheckOpenTChain(add, "dkmetaTree_lite");
+    dkmetaliteChain->SetBranchAddress("pots", &dk2nulite.pots);
+
+    for (Long64_t i = 0; i < dkmetaliteChain->GetEntries(); ++i) {
+      dkmetaliteChain->GetEntry(i);
       fTotalPOT += dk2nulite.pots;
     }
 
-    fdk2nuliteTree->SetBranchAddress("decay_ntype", &dk2nulite.decay_ntype);
-    fdk2nuliteTree->SetBranchAddress("decay_vx", &dk2nulite.decay_vx);
-    fdk2nuliteTree->SetBranchAddress("decay_vy", &dk2nulite.decay_vy);
-    fdk2nuliteTree->SetBranchAddress("decay_vz", &dk2nulite.decay_vz);
-    fdk2nuliteTree->SetBranchAddress("decay_pdpx", &dk2nulite.decay_pdpx);
-    fdk2nuliteTree->SetBranchAddress("decay_pdpy", &dk2nulite.decay_pdpy);
-    fdk2nuliteTree->SetBranchAddress("decay_pdpz", &dk2nulite.decay_pdpz);
-    fdk2nuliteTree->SetBranchAddress("decay_ppdxdz", &dk2nulite.decay_ppdxdz);
-    fdk2nuliteTree->SetBranchAddress("decay_ppdydz", &dk2nulite.decay_ppdydz);
-    fdk2nuliteTree->SetBranchAddress("decay_pppz", &dk2nulite.decay_pppz);
-    fdk2nuliteTree->SetBranchAddress("decay_ppenergy",
-                                     &dk2nulite.decay_ppenergy);
-    fdk2nuliteTree->SetBranchAddress("decay_ptype", &dk2nulite.decay_ptype);
-    fdk2nuliteTree->SetBranchAddress("decay_muparpx", &dk2nulite.decay_muparpx);
-    fdk2nuliteTree->SetBranchAddress("decay_muparpy", &dk2nulite.decay_muparpy);
-    fdk2nuliteTree->SetBranchAddress("decay_muparpz", &dk2nulite.decay_muparpz);
-    fdk2nuliteTree->SetBranchAddress("decay_mupare", &dk2nulite.decay_mupare);
-    fdk2nuliteTree->SetBranchAddress("decay_necm", &dk2nulite.decay_necm);
-    fdk2nuliteTree->SetBranchAddress("decay_nimpwt", &dk2nulite.decay_nimpwt);
-
-    fNEntries = fdk2nuliteTree->GetEntries();
-    fdk2nuliteTree->GetEntry(0);
-
-    return true;
+    return rtn;
   }
 
   size_t GetN() const { return fNEntries; };
@@ -109,7 +117,7 @@ public:
 
     nft::flux::DecayParent rdr;
 
-    fdk2nuliteTree->GetEntry(n);
+    fdk2nuliteChain->GetEntry(n);
 
     rdr.fENu_com = dk2nulite.decay_necm;
     rdr.fDecayTo = dk2nulite.decay_ntype;

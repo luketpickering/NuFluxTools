@@ -12,21 +12,19 @@ class Dk2NuReader : public IDecayParentReader {
 
   mutable bsim::Dk2Nu *dkReader;
 
-  mutable nft::utils::TFile_ptr fInputTree;
-  mutable nft::utils::TreeFile fDk2NuTree;
+  mutable nft::utils::TreeFile fDk2NuChain;
 
   double fTotalPOT;
   Long64_t fNEntries;
 
 public:
   Dk2NuReader()
-      : dkReader(nullptr), fInputTree(nft::utils::make_unique_TFile(nullptr)) {}
+      : dkReader(nullptr), fDk2NuChain(), fTotalPOT(0), fNEntries(0) {}
   bool CanReadFile(std::string const &file) {
-    nft::utils::TFile_ptr itree = nft::utils::CheckOpenTFile(file);
 
     try {
-      (void)nft::utils::CheckGetTTree(itree.get(), "dk2nuTree");
-      (void)nft::utils::CheckGetTTree(itree.get(), "dkmetaTree");
+      (void)nft::utils::CheckOpenTChain(file, "dk2nuTree");
+      (void)nft::utils::CheckOpenTChain(file, "dkmetaTree");
     } catch (nft::utils::failed_to_get_TTree) {
       return false;
     }
@@ -38,27 +36,32 @@ public:
       return false;
     }
 
-    fInputTree = nft::utils::CheckOpenTFile(file);
+    return AddFiles(file);
+  }
 
-    fDk2NuTree = nft::utils::CheckGetTTree(fInputTree.get(), "dk2nuTree");
+  bool AddFiles(std::string const &add) {
+    if (!fDk2NuChain) {
+      fDk2NuChain = nft::utils::CheckOpenTChain(add, "dk2nuTree");
+
+      fDk2NuChain->SetBranchAddress("dk2nu", &dkReader);
+      fDk2NuChain->GetEntry(0);
+    }
+
+    auto rtn = fDk2NuChain.chain()->Add(add.c_str());
+    fNEntries = fDk2NuChain->GetEntries();
 
     nft::utils::TreeFile DkMetaTree =
-        nft::utils::CheckGetTTree(fInputTree.get(), "dkmetaTree");
+        nft::utils::CheckOpenTChain(add, "dkmetaTree");
 
     bsim::DkMeta *meta = nullptr;
     DkMetaTree->SetBranchAddress("dkmeta", &meta);
 
-    fTotalPOT = 0;
     for (Long64_t i = 0; i < DkMetaTree->GetEntries(); ++i) {
       DkMetaTree->GetEntry(i);
       fTotalPOT += meta->pots;
     }
 
-    fDk2NuTree->SetBranchAddress("dk2nu", &dkReader);
-    fNEntries = fDk2NuTree->GetEntries();
-    fDk2NuTree->GetEntry(0);
-
-    return true;
+    return rtn;
   }
 
   size_t GetN() const { return fNEntries; };
@@ -72,7 +75,7 @@ public:
 
     nft::flux::DecayParent rdr;
 
-    fDk2NuTree->GetEntry(n);
+    fDk2NuChain->GetEntry(n);
 
     rdr.fENu_com = dkReader->decay.necm;
     rdr.fDecayTo = dkReader->decay.ntype;

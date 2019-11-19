@@ -37,4 +37,5 @@ struct nft_except : public std::exception {
 
 namespace nft {
 NEW_NFT_EXCEPT(internal_error);
+NEW_NFT_EXCEPT(bad_config);
 }
