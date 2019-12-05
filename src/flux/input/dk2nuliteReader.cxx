@@ -57,8 +57,10 @@ public:
   }
 
   bool AddFiles(std::string const &add) {
+    size_t NFiles = 0;
     if (!fdk2nuliteChain) {
       fdk2nuliteChain = nft::utils::CheckOpenTChain(add, "dk2nuTree_lite");
+      NFiles = fdk2nuliteChain.chain()->GetListOfFiles()->GetEntries();
 
       fdk2nuliteChain->SetBranchAddress("decay_ntype", &dk2nulite.decay_ntype);
       fdk2nuliteChain->SetBranchAddress("decay_vx", &dk2nulite.decay_vx);
@@ -88,21 +90,29 @@ public:
                                         &dk2nulite.decay_nimpwt);
 
       fdk2nuliteChain->GetEntry(0);
+    } else {
+      NFiles = fdk2nuliteChain.chain()->Add(add.c_str());
     }
 
-    auto rtn = fdk2nuliteChain.chain()->Add(add.c_str());
     fNEntries = fdk2nuliteChain->GetEntries();
 
     nft::utils::TreeFile dkmetaliteChain =
         nft::utils::CheckOpenTChain(add, "dkmetaTree_lite");
     dkmetaliteChain->SetBranchAddress("pots", &dk2nulite.pots);
 
+    double nPOT = 0;
     for (Long64_t i = 0; i < dkmetaliteChain->GetEntries(); ++i) {
       dkmetaliteChain->GetEntry(i);
-      fTotalPOT += dk2nulite.pots;
+      nPOT += dk2nulite.pots;
     }
 
-    return rtn;
+    fTotalPOT += nPOT;
+
+    std::cout << "[INFO]: Added " << NFiles << " files with " << nPOT
+              << " POT (" << fTotalPOT
+              << " Total POT) to input dk2nulite TChain." << std::endl;
+
+    return NFiles;
   }
 
   size_t GetN() const { return fNEntries; };

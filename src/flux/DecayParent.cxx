@@ -13,29 +13,37 @@ namespace flux {
 NEW_NFT_EXCEPT(no_dk2nu_support);
 NEW_NFT_EXCEPT(calcLocationWeight_error);
 
+#ifdef USE_DK2NU
+bsim::Decay GetDecay(DecayParent const &par){
+  bsim::Decay dk;
+
+  dk.ntype = par.fDecayTo;
+  dk.vx = par.fThreePos_lab.X();
+  dk.vy = par.fThreePos_lab.Y();
+  dk.vz = par.fThreePos_lab.Z();
+  dk.pdpx = par.fFourMom_lab.X();
+  dk.pdpy = par.fFourMom_lab.Y();
+  dk.pdpz = par.fFourMom_lab.Z();
+  dk.ppdxdz = par.fMomAtProduction.X() / par.fMomAtProduction.Z();
+  dk.ppdydz = par.fMomAtProduction.Y() / par.fMomAtProduction.Z();
+  dk.pppz = par.fMomAtProduction.Z();
+  dk.ppenergy = par.fMomAtProduction.E();
+  dk.ptype = par.fPDG;
+  dk.muparpx = par.fParentMomAtDecay.X();
+  dk.muparpy = par.fParentMomAtDecay.Y();
+  dk.muparpz = par.fParentMomAtDecay.Z();
+  dk.mupare = par.fParentMomAtDecay.E();
+  dk.necm = par.fENu_com;
+  dk.nimpwt = par.fMCWeight;
+
+  return dk;
+}
+#endif
+
 geom::NuRay DecayParent::Shoot(ROOT::Math::XYZPoint const &point) const {
 
 #ifdef USE_DK2NU
-  bsim::Decay dk;
-
-  dk.ntype = fDecayTo;
-  dk.vx = fThreePos_lab.X();
-  dk.vy = fThreePos_lab.Y();
-  dk.vz = fThreePos_lab.Z();
-  dk.pdpx = fFourMom_lab.X();
-  dk.pdpy = fFourMom_lab.Y();
-  dk.pdpz = fFourMom_lab.Z();
-  dk.ppdxdz = fMomAtProduction.X() / fMomAtProduction.Z();
-  dk.ppdydz = fMomAtProduction.Y() / fMomAtProduction.Z();
-  dk.pppz = fMomAtProduction.Z();
-  dk.ppenergy = fMomAtProduction.E();
-  dk.ptype = fPDG;
-  dk.muparpx = fParentMomAtDecay.X();
-  dk.muparpy = fParentMomAtDecay.Y();
-  dk.muparpz = fParentMomAtDecay.Z();
-  dk.mupare = fParentMomAtDecay.E();
-  dk.necm = fENu_com;
-  dk.nimpwt = fMCWeight;
+  bsim::Decay dk = GetDecay(*this);
 
   double nu_energy, nu_wght;
   if (bsim::calcEnuWgt(dk, TVector3(point.X(), point.Y(), point.Z()), nu_energy,

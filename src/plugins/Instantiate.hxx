@@ -136,7 +136,10 @@ Instantiate(std::string const &classname) {
   std::vector<std::string> plugin_search_dirs;
 
   if (getenv("NUFLUXTOOLS_PLUGINS")) {
-    plugin_search_dirs.push_back(getenv("NUFLUXTOOLS_PLUGINS"));
+    std::vector<std::string> paths =
+        nft::utils::split(getenv("NUFLUXTOOLS_PLUGINS"), ":");
+    std::copy(paths.begin(), paths.end(),
+              std::back_inserter(plugin_search_dirs));
   } else {
     plugin_search_dirs.push_back("./");
   }
@@ -226,11 +229,17 @@ Instantiate(std::string const &classname) {
       return LoadedPlugins.back().Instantiate();
     }
   }
+
+  std::stringstream ss("");
+  for(auto path: plugin_search_dirs){
+    ss << "\n" << path;
+  }
+
   throw failed_to_find_instantiator()
       << "[ERROR]: Failed to find instantiator for classname: "
       << std::quoted(classname) << " using interface "
       << std::quoted(plugin_traits<T>::interface_name())
-      << " from configured search path: " << plugin_search_dirs.front();
+      << " from configured search path(s): " << plugin_search_dirs.front();
 }
 } // namespace plugins
 } // namespace nft

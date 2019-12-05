@@ -3,10 +3,8 @@
 #include "utils/PDGUtils.hxx"
 #include "utils/ROOTUtils.hxx"
 
-#ifdef USE_DK2NU
 #include "dk2nu/tree/dk2nu.h"
 #include "dk2nu/tree/dkmeta.h"
-#endif
 
 class Dk2NuReader : public IDecayParentReader {
 
@@ -40,14 +38,16 @@ public:
   }
 
   bool AddFiles(std::string const &add) {
+    int NFiles = 0;
     if (!fDk2NuChain) {
       fDk2NuChain = nft::utils::CheckOpenTChain(add, "dk2nuTree");
+      NFiles = fDk2NuChain.chain()->GetListOfFiles()->GetEntries();
 
       fDk2NuChain->SetBranchAddress("dk2nu", &dkReader);
       fDk2NuChain->GetEntry(0);
+    } else {
+      NFiles = fDk2NuChain.chain()->Add(add.c_str());
     }
-
-    auto rtn = fDk2NuChain.chain()->Add(add.c_str());
     fNEntries = fDk2NuChain->GetEntries();
 
     nft::utils::TreeFile DkMetaTree =
@@ -56,12 +56,19 @@ public:
     bsim::DkMeta *meta = nullptr;
     DkMetaTree->SetBranchAddress("dkmeta", &meta);
 
+    double nPOT = 0;
     for (Long64_t i = 0; i < DkMetaTree->GetEntries(); ++i) {
       DkMetaTree->GetEntry(i);
-      fTotalPOT += meta->pots;
+      nPOT += meta->pots;
     }
 
-    return rtn;
+    fTotalPOT += nPOT;
+
+    std::cout << "[INFO]: Added " << NFiles << " files with " << nPOT
+              << " POT (" << fTotalPOT << " Total POT) to input Dk2Nu TChain."
+              << std::endl;
+
+    return NFiles;
   }
 
   size_t GetN() const { return fNEntries; };

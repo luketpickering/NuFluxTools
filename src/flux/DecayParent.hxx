@@ -5,6 +5,10 @@
 
 #include "geom/NuRay.hxx"
 
+#ifdef USE_DK2NU
+#include "dk2nu/tree/dk2nu.h"
+#endif
+
 #include "Math/Point3D.h"
 #include "Math/Vector3D.h"
 #include "Math/Vector4D.h"
@@ -45,5 +49,9 @@ struct DecayParent : public utils::Particle {
     return rtn;
   }
 };
+
+#ifdef USE_DK2NU
+bsim::Decay GetDecay(DecayParent const &);
+#endif
 } // namespace flux
 } // namespace nft

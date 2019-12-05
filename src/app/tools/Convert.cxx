@@ -48,12 +48,18 @@ public:
           << "Convert tool didn't receive an fhicl configuration. Pass with -f "
              "after the tool name.";
     }
-    if (!Inputs.size()) {
-      throw nft::bad_config() << "Convert tool didn't recieve any inputs, pass "
-                                 "with -i after the tool name.";
-    }
 
     fhicl::ParameterSet conf = fhicl::make_ParameterSet(fhicl_config);
+
+    if (conf.has_key("input.file")) {
+      Inputs.push_back(conf.get<std::string>("input.file"));
+    }
+
+    if (!Inputs.size()) {
+      throw nft::bad_config() << "Convert tool didn't recieve any inputs, pass "
+                                 "with -i after the tool name or set "
+                                 "input.file in the configuration.";
+    }
 
     auto tgs = nft::plugins::Instantiate<IFluxConverter>(
         conf.get<std::string>("convert.plugin"));
@@ -77,17 +83,20 @@ public:
 
     dkreader->SetTransformation(tf.Inverse());
 
-    double req_POT = conf.get<double>("convert.POTToProcess");
-    int max_reuse = conf.get<int>("convert.MaxReuse");
+    double req_POT = conf.get<double>("convert.POTToProcess",
+                                      std::numeric_limits<double>::max());
+    int max_reuse = conf.get<int>("convert.MaxReuse", 1);
     double POT_consumed = 0;
 
     double POT_shout_ratio = 1000;
     double next_POT_shout = req_POT / POT_shout_ratio;
 
-    std::cout << "[INFO]: Converting at least " << req_POT << " POT."
-              << std::endl;
+    if (req_POT != std::numeric_limits<double>::max()) {
+      std::cout << "[INFO]: Converting at least " << req_POT << " POT."
+                << std::endl;
+    }
     int reuse = 0;
-    while ((reuse < max_reuse) && (POT_consumed < req_POT)) {
+    while ((reuse < max_reuse) && (POT_consumed < req_POT) && !tgs->Done()) {
       for (auto dk : *dkreader) {
         POT_consumed += tgs->Convert(dk);
         if (POT_consumed >= req_POT) {
